@@ -3,7 +3,7 @@ class Review {
   final String mentorId;
   final String menteeId;
   final String? appointmentId;
-  final double rating;
+  final int rating;
   final String? comment;
   final DateTime createdAt;
   final bool isFlagged;
@@ -25,7 +25,7 @@ class Review {
       mentorId: json['mentor_id'] as String,
       menteeId: json['mentee_id'] as String,
       appointmentId: json['appointment_id'] as String?,
-      rating: (json['rating'] as num).toDouble(),
+      rating: (json['rating'] as num).toInt(),
       comment: json['comment'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
       isFlagged: json['is_flagged'] as bool? ?? false,
@@ -50,7 +50,7 @@ class Review {
     String? mentorId,
     String? menteeId,
     String? appointmentId,
-    double? rating,
+    int? rating,
     String? comment,
     DateTime? createdAt,
     bool? isFlagged,
