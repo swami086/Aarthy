@@ -151,7 +151,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     final isRead = message.metadata?['isRead'];
     final textWidget = TextMessage(
       emojiEnlargementBehavior: EmojiEnlargementBehavior.multi,
-      hideBackgroundOnEmoji: false,
+      hideBackgroundOnEmojiMessages: false,
       message: message,
       showName: showName,
       usePreviewData: true,
