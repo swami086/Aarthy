@@ -11,7 +11,7 @@ class ReviewService {
     required String mentorId,
     required String menteeId,
     required String appointmentId,
-    required double rating,
+    required int rating,
     String? comment,
   }) async {
     if (rating < 1 || rating > 5) {
@@ -44,7 +44,7 @@ class ReviewService {
 
   Future<void> updateReview({
     required String reviewId,
-    double? rating,
+    int? rating,
     String? comment,
   }) async {
     final updates = <String, dynamic>{};

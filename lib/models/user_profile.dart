@@ -1,4 +1,4 @@
-enum UserRole { mentor, mentee }
+enum UserRole { mentor, mentee, admin }
 
 class UserProfile {
   final String userId;

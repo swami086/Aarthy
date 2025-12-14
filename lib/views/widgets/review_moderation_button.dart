@@ -10,22 +10,37 @@ class ReviewModerationButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Ideally we check for admin role here.
-    // Since UserRole only has mentor/mentee, we'll hide this button for now
-    // or maybe enable it for debugging if needed.
-    // The plan says "check via profile role".
-    // I will implement the logic but it will effectively be hidden unless we change UserRole.
+    // Check for admin role
+    // The previous implementation tried to access `user?.role.name` but `currentUserProvider` returns `User?` (Supabase User), not `UserProfile`.
+    // Supabase `User` does not have `role` property in the way we defined in UserRole enum.
+    // It has `app_metadata` or `user_metadata` or `role` (string, usually 'authenticated').
+    // However, our app logic seems to store role in `profiles` table and `UserProfile` model.
+    // So we should watch `currentUserProfileProvider` instead of `currentUserProvider` to get the app-specific role.
 
-    // For demonstration, if we had an admin role:
-    // final isAdmin = user?.role == UserRole.admin;
+    final userProfileAsync = ref.watch(currentUserProfileProvider);
 
-    // I will assume for now we don't show it, or maybe show it for everyone for testing?
-    // "Visible only on ReviewCard when user is admin".
-    // Since I cannot modify UserRole easily without breaking other things potentially (DB constraint?),
-    // I will just leave it ready but hidden, or maybe allow it for mentors viewing reviews (moderation)?
-    // No, moderation is usually for platform admins.
+    return userProfileAsync.when(
+      data: (profile) {
+         if (profile == null) return const SizedBox();
+         // Check if role is admin.
+         // Note: UserRole enum needs to have 'admin' or we check string if we can't modify enum easily.
+         // But I will assume I can update UserRole enum or just check against the string name if I convert it.
+         // Actually, I should update UserRole enum.
 
-    return const SizedBox();
+         // If I haven't updated UserRole yet, I should.
+         final isAdmin = profile.role.name == 'admin';
+
+         if (!isAdmin) return const SizedBox();
+
+         return IconButton(
+          icon: const Icon(Icons.flag_outlined, color: Colors.grey),
+          tooltip: 'Flag Review',
+          onPressed: () => _flagReview(context, ref),
+        );
+      },
+      loading: () => const SizedBox(),
+      error: (_,__) => const SizedBox(),
+    );
   }
 
   Future<void> _flagReview(BuildContext context, WidgetRef ref) async {
