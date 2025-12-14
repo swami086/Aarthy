@@ -22,6 +22,7 @@ import '../../views/screens/appointment/time_slot_selection_screen.dart';
 import '../../views/screens/appointment/booking_confirmation_screen.dart';
 import '../../views/screens/chat/chat_list_screen.dart';
 import '../../views/screens/chat/chat_detail_screen.dart';
+import '../../views/screens/landing_screen.dart';
 import '../../viewmodels/viewmodels.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -29,7 +30,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final currentUserProfileAsync = ref.watch(currentUserProfileProvider);
 
   return GoRouter(
-    initialLocation: '/splash',
+    initialLocation: '/landing',
     refreshListenable: GoRouterRefreshStream(ref.watch(authStateProvider.stream)),
     routes: [
       GoRoute(
@@ -43,6 +44,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/signup',
         builder: (context, state) => const SignupScreen(),
+      ),
+      GoRoute(
+        path: '/landing',
+        builder: (context, state) => const LandingScreen(),
       ),
        GoRoute(
         path: '/forgot-password',
@@ -157,10 +162,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
            path == '/forgot-password' ||
            path == '/splash' ||
            path == '/update-password' ||
+           path == '/landing' ||
            path == '/'; // Allow root to load for auth checks
 
        if (!loggedIn && !isLoggingIn && !hasRecoveryCode) {
-         return '/login';
+         return '/landing';
        }
        
        // Handle already logged in but visiting auth pages
