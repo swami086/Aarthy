@@ -8,6 +8,7 @@ import '../widgets/hero_section.dart';
 import '../widgets/focus_area_card.dart';
 import '../widgets/crisis_banner.dart';
 import '../widgets/legal_disclaimer.dart';
+import '../widgets/review/review_card.dart';
 import '../../models/focus_area.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -18,7 +19,8 @@ class HomeScreen extends ConsumerWidget {
     // Watch providers
     final focusAreasAsync = ref.watch(focusAreasProvider);
     final mentorsAsync = ref.watch(mentorsProvider);
-    
+    final topReviewsAsync = ref.watch(topReviewsProvider(3));
+
     // Using a consistent scroll controller for effects if needed
     final ScrollController scrollController = ScrollController();
 
@@ -308,68 +310,98 @@ class HomeScreen extends ConsumerWidget {
 
                 const SizedBox(height: 40),
                 
-                // Testimonial
-                // Assuming we might not have real reviews on home load easily, 
-                // we can either fetch some or hardcode a nice one from HTML instructions.
-                // For now, let's pretend we have one.
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
+                // Testimonials
+                Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Container(
-                    width: 320,
-                    margin: const EdgeInsets.only(right: 16),
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: const [
-                         BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 10,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(Icons.star, color: Colors.amber, size: 20),
-                            Icon(Icons.star, color: Colors.amber, size: 20),
-                            Icon(Icons.star, color: Colors.amber, size: 20),
-                            Icon(Icons.star, color: Colors.amber, size: 20),
-                            Icon(Icons.star, color: Colors.amber, size: 20),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          '"My mentor helped me realize that aiming for perfection was actually holding me back. I feel so much lighter now."',
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontStyle: FontStyle.italic,
-                            height: 1.4,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              backgroundColor: Colors.grey.withOpacity(0.1),
-                              child: const Text('J', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.star, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      Text('What Our Mentees Say', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                SizedBox(
+                  height: 250, // Height to accommodate review cards
+                  child: topReviewsAsync.when(
+                    data: (reviews) {
+                      if (reviews.isEmpty) {
+                         // Fallback to hardcoded one if no reviews
+                         return SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Container(
+                              width: 320,
+                              margin: const EdgeInsets.only(right: 16),
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).cardColor,
+                                borderRadius: BorderRadius.circular(24),
+                                boxShadow: const [
+                                   BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 10,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Row(
+                                    children: [
+                                      Icon(Icons.star, color: Colors.amber, size: 20),
+                                      Icon(Icons.star, color: Colors.amber, size: 20),
+                                      Icon(Icons.star, color: Colors.amber, size: 20),
+                                      Icon(Icons.star, color: Colors.amber, size: 20),
+                                      Icon(Icons.star, color: Colors.amber, size: 20),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    '"My mentor helped me realize that aiming for perfection was actually holding me back. I feel so much lighter now."',
+                                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                      fontStyle: FontStyle.italic,
+                                      height: 1.4,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Row(
+                                    children: [
+                                      CircleAvatar(
+                                        backgroundColor: Colors.grey.withOpacity(0.1),
+                                        child: const Text('J', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text('Jordan', style: TextStyle(fontWeight: FontWeight.bold)),
+                                          Text('High School Senior', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey)),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                            const SizedBox(width: 12),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text('Jordan', style: TextStyle(fontWeight: FontWeight.bold)),
-                                Text('High School Senior', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey)),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                          );
+                      }
+
+                      return ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: reviews.length,
+                        itemBuilder: (context, index) {
+                          return ReviewCard(review: reviews[index]);
+                        },
+                      );
+                    },
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (_, __) => const SizedBox(), // Hide if error
                   ),
                 ),
                 

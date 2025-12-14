@@ -23,6 +23,7 @@ import '../../views/screens/appointment/booking_confirmation_screen.dart';
 import '../../views/screens/chat/chat_list_screen.dart';
 import '../../views/screens/chat/chat_detail_screen.dart';
 import '../../views/screens/landing_screen.dart';
+import '../../views/screens/review/review_submission_screen.dart';
 import '../../viewmodels/viewmodels.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -137,6 +138,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             otherUserId: userId,
             otherUserProfile: profile,
           );
+        },
+      ),
+      GoRoute(
+        path: '/review-submission/:appointmentId',
+        builder: (context, state) {
+          final appointmentId = state.pathParameters['appointmentId']!;
+          // Use query parameter as fallback for web, or extra for direct navigation flow
+          final mentorId = (state.extra as String?) ?? state.uri.queryParameters['mentorId'];
+
+          if (mentorId == null) {
+            // Fallback error or redirect if no mentorId provided
+            return const Scaffold(body: Center(child: Text("Invalid navigation state")));
+          }
+
+          return ReviewSubmissionScreen(appointmentId: appointmentId, mentorId: mentorId);
         },
       ),
     ],
