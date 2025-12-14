@@ -56,6 +56,11 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
       message.senderId,
     );
 
+    final metadata = <String, dynamic>{};
+    if (message.senderId == currentUserId) {
+      metadata['isRead'] = message.isRead;
+    }
+
     if (message.hasAttachment) {
       if (message.isImage) {
         return types.ImageMessage(
@@ -65,6 +70,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
           uri: message.attachmentUrl!,
           name: 'image',
           size: 0,
+          metadata: metadata,
         );
       } else {
         return types.FileMessage(
@@ -74,6 +80,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
           uri: message.attachmentUrl!,
           name: message.content.isNotEmpty ? message.content : 'file',
           size: 0,
+          metadata: metadata,
         );
       }
     }
@@ -83,7 +90,99 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
       author: author,
       createdAt: message.createdAt.millisecondsSinceEpoch,
       text: message.content,
+      metadata: metadata,
     );
+  }
+
+  Widget _imageMessageWithReceipts(
+    types.ImageMessage message, {
+    required int messageWidth,
+  }) {
+    final isRead = message.metadata?['isRead'];
+    final imageWidget = ImageMessage(
+      message: message,
+      messageWidth: messageWidth,
+    );
+
+    if (isRead != null) {
+      return Stack(
+        children: [
+          imageWidget,
+          Positioned(
+            bottom: 4,
+            right: 4,
+            child: _buildReadReceipt(isRead),
+          ),
+        ],
+      );
+    }
+    return imageWidget;
+  }
+
+  Widget _fileMessageWithReceipts(
+    types.FileMessage message, {
+    required int messageWidth,
+  }) {
+    final isRead = message.metadata?['isRead'];
+    final fileWidget = FileMessage(
+      message: message,
+    );
+
+    if (isRead != null) {
+      return Stack(
+        children: [
+          fileWidget,
+          Positioned(
+            bottom: 4,
+            right: 4,
+            child: _buildReadReceipt(isRead),
+          ),
+        ],
+      );
+    }
+    return fileWidget;
+  }
+
+  Widget _textMessageWithReceipts(
+    types.TextMessage message, {
+    required int messageWidth,
+    required bool showName,
+  }) {
+    final isRead = message.metadata?['isRead'];
+    final textWidget = TextMessage(
+      emojiEnlargementBehavior: EmojiEnlargementBehavior.multi,
+      hideBackgroundOnEmoji: false,
+      message: message,
+      showName: showName,
+      usePreviewData: true,
+    );
+
+    if (isRead != null) {
+      return Stack(
+        children: [
+          textWidget,
+          Positioned(
+            bottom: 4,
+            right: 4,
+            child: _buildReadReceipt(isRead),
+          ),
+        ],
+      );
+    }
+    return textWidget;
+  }
+
+  Widget _buildReadReceipt(bool isRead) {
+    if (!isRead) {
+      return const Icon(Icons.done, size: 12, color: Colors.grey);
+    } else {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.done_all, size: 12, color: Colors.blue[400]),
+        ],
+      );
+    }
   }
 
   Future<void> _handleSendPressed(types.PartialText message) async {
@@ -249,6 +348,9 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                 onSendPressed: _handleSendPressed,
                 onAttachmentPressed: _handleAttachmentPressed,
                 user: flutterUser,
+                textMessageBuilder: _textMessageWithReceipts,
+                imageMessageBuilder: _imageMessageWithReceipts,
+                fileMessageBuilder: _fileMessageWithReceipts,
                 theme: DefaultChatTheme(
                   primaryColor: AppColors.primary,
                   backgroundColor: Colors.white,
