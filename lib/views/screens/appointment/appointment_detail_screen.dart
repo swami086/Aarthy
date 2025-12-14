@@ -91,11 +91,64 @@ class AppointmentDetailScreen extends ConsumerWidget {
         
         // Role-specific actions
         if (isMentor) ..._buildMentorActions(context, ref, appt),
-        if (!isMentor && appt.canBeCancelled) _buildCancelButton(context, ref, appt),
+        if (!isMentor) ...[
+          if (appt.canBeCancelled) _buildCancelButton(context, ref, appt),
+          if (appt.status == AppointmentStatus.completed)
+            _buildReviewButton(context, ref, appt),
+        ],
       ],
     );
   }
-  
+
+  Widget _buildReviewButton(BuildContext context, WidgetRef ref, Appointment appt) {
+    final existingReviewAsync = ref.watch(existingReviewProvider(appt.id));
+
+    return existingReviewAsync.when(
+      data: (review) {
+        if (review != null) {
+          return Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Colors.green.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.green.withOpacity(0.3)),
+            ),
+            child: const Text(
+              "Review Submitted ✓",
+              style: TextStyle(
+                color: Colors.green,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          );
+        }
+
+        return SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+            onPressed: () {
+              context.push(
+                '/review-submission/${appt.id}',
+                extra: appt.mentorId,
+              );
+            },
+            icon: const Icon(Icons.star),
+            label: const Text("Leave a Review"),
+          ),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (_, __) => const SizedBox(),
+    );
+  }
+
   List<Widget> _buildMentorActions(BuildContext context, WidgetRef ref, Appointment appt) {
     if (appt.status == AppointmentStatus.pending) {
       return [
