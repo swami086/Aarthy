@@ -54,6 +54,7 @@ CREATE TABLE reviews (
   appointment_id UUID REFERENCES appointments(id) ON DELETE SET NULL,
   rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
   comment TEXT,
+  is_flagged BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   CONSTRAINT no_self_review CHECK (mentor_id != mentee_id),
   UNIQUE(appointment_id, mentee_id) -- One review per appointment per mentee
@@ -79,6 +80,7 @@ CREATE INDEX idx_messages_conversation ON messages(sender_id, receiver_id, creat
 CREATE INDEX idx_reviews_mentor_id ON reviews(mentor_id);
 CREATE INDEX idx_reviews_mentee_id ON reviews(mentee_id);
 CREATE INDEX idx_reviews_rating ON reviews(rating);
+CREATE INDEX idx_reviews_flagged ON reviews(is_flagged) WHERE is_flagged = TRUE;
 
 -- Enable RLS on all tables
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
@@ -133,7 +135,16 @@ CREATE POLICY "Anyone can view reviews" ON reviews
   FOR SELECT USING (true);
 
 CREATE POLICY "Mentees can create reviews for their appointments" ON reviews
-  FOR INSERT WITH CHECK (auth.uid() = mentee_id);
+  FOR INSERT WITH CHECK (
+    auth.uid() = mentee_id AND
+    EXISTS (
+      SELECT 1
+      FROM appointments
+      WHERE appointments.id = reviews.appointment_id
+        AND appointments.mentee_id = auth.uid()
+        AND appointments.status = 'completed'
+    )
+  );
 
 CREATE POLICY "Mentees can update their own reviews" ON reviews
   FOR UPDATE USING (auth.uid() = mentee_id);

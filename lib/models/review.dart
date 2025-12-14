@@ -3,9 +3,10 @@ class Review {
   final String mentorId;
   final String menteeId;
   final String? appointmentId;
-  final double rating;
+  final int rating;
   final String? comment;
   final DateTime createdAt;
+  final bool isFlagged;
 
   Review({
     required this.id,
@@ -15,6 +16,7 @@ class Review {
     required this.rating,
     this.comment,
     required this.createdAt,
+    this.isFlagged = false,
   });
 
   factory Review.fromJson(Map<String, dynamic> json) {
@@ -23,9 +25,10 @@ class Review {
       mentorId: json['mentor_id'] as String,
       menteeId: json['mentee_id'] as String,
       appointmentId: json['appointment_id'] as String?,
-      rating: (json['rating'] as num).toDouble(),
+      rating: json['rating'] as int,
       comment: json['comment'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
+      isFlagged: json['is_flagged'] as bool? ?? false,
     );
   }
 
@@ -38,7 +41,30 @@ class Review {
       'rating': rating,
       'comment': comment,
       'created_at': createdAt.toIso8601String(),
+      'is_flagged': isFlagged,
     };
+  }
+
+  Review copyWith({
+    String? id,
+    String? mentorId,
+    String? menteeId,
+    String? appointmentId,
+    int? rating,
+    String? comment,
+    DateTime? createdAt,
+    bool? isFlagged,
+  }) {
+    return Review(
+      id: id ?? this.id,
+      mentorId: mentorId ?? this.mentorId,
+      menteeId: menteeId ?? this.menteeId,
+      appointmentId: appointmentId ?? this.appointmentId,
+      rating: rating ?? this.rating,
+      comment: comment ?? this.comment,
+      createdAt: createdAt ?? this.createdAt,
+      isFlagged: isFlagged ?? this.isFlagged,
+    );
   }
 
   static double getAverageRating(List<Review> reviews) {

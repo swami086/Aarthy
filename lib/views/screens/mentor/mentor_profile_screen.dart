@@ -5,7 +5,8 @@ import 'package:safe_space_app/utils/constants/app_colors.dart';
 import 'package:safe_space_app/viewmodels/viewmodels.dart';
 import 'package:go_router/go_router.dart';
 import 'package:safe_space_app/models/focus_area.dart';
-import '../../widgets/review_card.dart';
+import '../../widgets/review/review_card.dart';
+import '../../widgets/review/review_moderation_button.dart';
 import '../../widgets/error_message.dart';
 import '../../widgets/loading_overlay.dart';
 
@@ -149,7 +150,10 @@ class MentorProfileScreen extends ConsumerWidget {
                                scrollDirection: Axis.horizontal,
                                itemCount: reviews.length,
                                separatorBuilder: (_,__) => const SizedBox(width: 16),
-                               itemBuilder: (context, index) => ReviewCard(review: reviews[index]),
+                               itemBuilder: (context, index) => ReviewCard(
+                                 review: reviews[index],
+                                 trailing: ReviewModerationButton(review: reviews[index]),
+                               ),
                              ),
                            );
                          },
